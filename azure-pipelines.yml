@@ -12,6 +12,11 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
+- task: NuGetAuthenticate@0
+  displayName: 'Nuget Authenticate'
+  inputs:
+    nuGetServiceConnections: 'beardyinc_feed_connection'  
+
 steps:
 - task: UseDotNet@2
   displayName: ".NET Core 3.1.x"
@@ -35,10 +40,7 @@ steps:
     packagesToPack:  'FreshbooksApiClient/FreshbooksApiClient.csproj'
     includeSymbols: true
 
-- task: NuGetAuthenticate@0
-  displayName: 'Nuget Authenticate'
-  inputs:
-    nuGetServiceConnections: 'beardyinc_feed_connection'
+
 
 - task: NuGetCommand@2
   displayName: 'Publish to feed'
