@@ -31,6 +31,6 @@ steps:
   displayName: 'Publish to feed'
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    packagesToPush: '**/*.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: 'd0c967cf-8260-43c1-9001-5c1fac32ccea'
