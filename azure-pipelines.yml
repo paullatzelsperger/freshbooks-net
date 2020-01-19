@@ -27,7 +27,7 @@ steps:
   displayName: 'Pack Libs'
   inputs:
     command: 'pack'
-    packagesToPack:  '**\**.csproj'
+    packagesToPack:  '**\*.csproj'
     includeSymbols: true
 
 
