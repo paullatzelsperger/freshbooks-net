@@ -15,10 +15,6 @@ variables:
 
 
 steps:
-- task: NuGetAuthenticate@0
-  displayName: 'Nuget Authenticate'
-  inputs:
-    nuGetServiceConnections: 'beardyinc_feed_connection'
 - task: UseDotNet@2
   displayName: ".NET Core 3.1.x"
   inputs:
