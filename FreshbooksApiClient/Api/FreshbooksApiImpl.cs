@@ -7,6 +7,7 @@ using FreshbooksApiClient.Auth;
 using FreshbooksApiClient.Contracts;
 using FreshbooksApiClient.Rest;
 using FreshbooksTimeEntryGenerator.Contracts;
+using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;
@@ -23,7 +24,8 @@ namespace FreshbooksApiClient.Api
         private readonly IRestClientFactory _factory;
 
         public FreshbooksApiImpl(IFreshbooksAuthorizer authorizer, IOptionsMonitor<FreshbooksAuthSettings> authSettings,
-            IOptionsMonitor<FreshbooksAppSettings> appSettings, ITokenStore<FreshbooksTokens> tokenStore, ILogger<FreshbooksApiImpl> logger, IRestClientFactory factory)
+            IOptionsMonitor<FreshbooksAppSettings> appSettings, ITokenStore<FreshbooksTokens> tokenStore,
+            ILogger<FreshbooksApiImpl> logger, IRestClientFactory factory)
         {
             _authorizer = authorizer;
             _authSettings = authSettings.CurrentValue;
@@ -35,22 +37,32 @@ namespace FreshbooksApiClient.Api
 
         public async Task Authenticate()
         {
-            var settings = _authSettings;
+            var freshbooksTokens = (await _tokenStore.GetTokenAsync());
 
-            var authCode =
-                await _authorizer.StartAuthorization(settings.AuthorizationUrl, settings.RedirectUrl, settings.ClientId);
-
-            _logger.LogInformation($"Received auth code {authCode}");
-            
             var appS = _appSettings;
             var authS = _authSettings;
-            var tokens = await _authorizer.RequestTokens(appS.ApiBaseUrl, authCode, authS.ClientId, authS.ClientSecret,
-                authS.RedirectUrl);
+
+
+            FreshbooksTokens tokens;
+            if (freshbooksTokens.RefreshToken != null)
+            {
+                tokens = await _authorizer.RefreshTokenRequest(appS.ApiBaseUrl, freshbooksTokens.RefreshToken,
+                    authS.ClientId, authS.ClientSecret, authS.RedirectUrl);
+                _logger.LogInformation(
+                    $"Found locally stored refresh token - received updated access token {tokens.AccessToken}");
+            }
+            else
+            {
+                var authCode =
+                    await _authorizer.StartAuthorization(authS.AuthorizationUrl, authS.RedirectUrl, authS.ClientId);
+                _logger.LogInformation($"Received auth code {authCode}");
+                tokens = await _authorizer.RequestTokens(appS.ApiBaseUrl, authCode, authS.ClientId, authS.ClientSecret,
+                    authS.RedirectUrl);
+            }
 
             _logger.LogInformation($"Received bearer token and refresh token");
             await _tokenStore.StoreToken(tokens);
             _logger.LogInformation($"Authentication procedure complete!");
-
         }
 
         public async Task<IdentityInfo> GetIdentityInfo()
@@ -61,14 +73,15 @@ namespace FreshbooksApiClient.Api
                 .AddHeader("Content-Type", MediaTypeNames.Application.Json);
             var client = await _factory.CreateRestClient();
 
-            var response= await client.ExecuteGetAsync<IdentityInfo>(request: request);
+            var response = await client.ExecuteGetAsync<IdentityInfo>(request: request);
             if (response.IsSuccessful)
             {
                 return response.Data;
             }
-            
+
             throw new FreshbooksApiException(
-                $"code={response.StatusCode.ToString()} message={response.Content}, error={response.ErrorMessage}");        }
+                $"code={response.StatusCode.ToString()} message={response.Content}, error={response.ErrorMessage}");
+        }
 
 
         public async Task<TimeEntryResponse> GetTimeEntries(TimeEntryFilter filter, string businessId)
@@ -86,8 +99,9 @@ namespace FreshbooksApiClient.Api
             {
                 return response.Data;
             }
+
             throw new FreshbooksApiException(
-                $"code={response.StatusCode.ToString()} message={response.Content}, error={response.ErrorMessage}");        }
-        
+                $"code={response.StatusCode.ToString()} message={response.Content}, error={response.ErrorMessage}");
+        }
     }
 }

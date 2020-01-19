@@ -46,8 +46,7 @@ namespace FreshbooksApiClient.Auth
         }
 
         public async Task<FreshbooksTokens> RequestTokens(string apiBaseUrl, string authCode, string clientId,
-            string clientSecret,
-            string redirectUri)
+            string clientSecret, string redirectUri)
         {
             var url = $"{apiBaseUrl}/auth/oauth/token";
             var request = new RestRequest(url, Method.POST);
@@ -65,6 +64,37 @@ namespace FreshbooksApiClient.Auth
                 client_secret = clientSecret,
                 client_id = clientId,
                 code = authCode,
+                redirect_uri = redirectUri
+            };
+            request.AddJsonBody(payload);
+
+            var client = await _factory.CreateRestClient();
+
+            var response = await client.ExecutePostAsync<FreshbooksTokens>(request);
+            if (response.IsSuccessful)
+            {
+                return response.Data;
+            }
+
+            throw new AuthenticationException(
+                $"code={response.StatusCode.ToString()} message={response.Content}, error={response.ErrorMessage}");
+        }
+
+        public async Task<FreshbooksTokens> RefreshTokenRequest(string apiBaseUrl,
+            string refreshToken,
+            string clientId, string clientSecret, object redirectUri)
+        {
+            var url = $"{apiBaseUrl}/auth/oauth/token";
+            var request = new RestRequest(url, Method.POST);
+
+            request.AddHeader("Api-Version", "alpha")
+                .AddHeader("Content-Type", MediaTypeNames.Application.Json);
+            var payload = new
+            {
+                grant_type = "refresh_token",
+                client_secret = clientSecret,
+                client_id = clientId,
+                refresh_token = refreshToken,
                 redirect_uri = redirectUri
             };
             request.AddJsonBody(payload);
