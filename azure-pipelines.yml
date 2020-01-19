@@ -23,12 +23,8 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
-- task: NuGetCommand@2
+- script: dotnet pack --include-symbols
   displayName: 'Pack Libs'
-  inputs:
-    command: 'pack'
-    packagesToPack:  '**\*.csproj'
-    includeSymbols: true
 
 
 - task: NuGetCommand@2
