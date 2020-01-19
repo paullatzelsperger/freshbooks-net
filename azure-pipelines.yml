@@ -27,5 +27,5 @@ steps:
 - script: dotnet pack --include-symbols
   displayName: 'Pack Libs'
 
-- script: dotnet nuget push --source "beardyinc" --api-key az **/*.nupkg
-  displayName: 'Publish packages to feed'
+#- script: dotnet nuget push --source "beardyinc" --api-key az **/*.nupkg
+#  displayName: 'Publish packages to feed'

@@ -3,3 +3,4 @@ obj/
 /packages/
 .idea/
 appsettings.local.json
+nuget.config
