@@ -30,4 +30,11 @@ steps:
 - task: NuGetAuthenticate@0
   displayName: 'Nuget Authenticate'
   inputs:
-    nuGetServiceConnections: 
+    nuGetServiceConnections: 'beardyinc_feed_connection'
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'd0c967cf-8260-43c1-9001-5c1fac32ccea'
