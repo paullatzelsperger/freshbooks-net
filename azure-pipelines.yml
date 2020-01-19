@@ -15,10 +15,6 @@ variables:
 
 
 steps:
-- task: NuGetAuthenticate@0
-  displayName: 'Nuget Authenticate'
-  inputs:
-    nuGetServiceConnections: 'beardyinc_feed_connection'  
 - task: UseDotNet@2
   displayName: ".NET Core 3.1.x"
   inputs:
@@ -31,17 +27,17 @@ steps:
   displayName: 'Pack Api Client'
   inputs:
     command: 'pack'
-    packagesToPack:  'FreshbooksApiClient/FreshbooksApiClient.csproj'
+    packagesToPack: 'FreshbooksApiClient\FreshbooksApiClient.csproj'
+    versioningScheme: 'off'
     includeSymbols: true
 
 - task: NuGetCommand@2
   displayName: 'Pack RedirectServer'
   inputs:
     command: 'pack'
-    packagesToPack:  'FreshbooksApiClient/FreshbooksApiClient.csproj'
+    packagesToPack: 'RedirectServer\RedirectServer.csproj'
+    versioningScheme: 'off'
     includeSymbols: true
-
-
 
 - task: NuGetCommand@2
   displayName: 'Publish to feed'
