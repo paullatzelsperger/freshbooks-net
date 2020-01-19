@@ -27,15 +27,5 @@ steps:
 - script: dotnet pack --include-symbols
   displayName: 'Pack Libs'
 
-- task: NuGetAuthenticate@0
-  inputs:
-    nuGetServiceConnections: 'beardyinc_feed_connection'
-    forceReinstallCredentialProvider: true
-
-- task: NuGetCommand@2
-  displayName: 'Publish to feed'
-  inputs:
-    command: 'push'
-    packagesToPush: '**/*.nupkg'
-    nuGetFeedType: 'internal'
-    publishVstsFeed: 'd0c967cf-8260-43c1-9001-5c1fac32ccea'
+- script: dotnet nuget push --source "beardyinc" --api-key az **/*.nupkg
+  displayName: 'Publish packages to feed'
