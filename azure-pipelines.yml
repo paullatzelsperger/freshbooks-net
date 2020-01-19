@@ -13,7 +13,7 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: UseDotNet@2 
+- task: UseDotNet@2
   displayName: ".NET Core 3.1.x"
   inputs:
     version: '3.1.x'
@@ -22,9 +22,17 @@ steps:
   displayName: 'dotnet build $(buildConfiguration)'
 
 - task: NuGetCommand@2
+  displayName: 'Pack Api Client'
   inputs:
     command: 'pack'
-    packagesToPack: '**/*.csproj'
+    packagesToPack:  'FreshbooksApiClient/FreshbooksApiClient.csproj'
+    includeSymbols: true
+
+- task: NuGetCommand@2
+  displayName: 'Pack RedirectServer'
+  inputs:
+    command: 'pack'
+    packagesToPack:  'FreshbooksApiClient/FreshbooksApiClient.csproj'
     includeSymbols: true
 
 - task: NuGetAuthenticate@0
@@ -33,6 +41,7 @@ steps:
     nuGetServiceConnections: 'beardyinc_feed_connection'
 
 - task: NuGetCommand@2
+  displayName: 'Publish to feed'
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
